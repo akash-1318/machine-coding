@@ -193,3 +193,30 @@
 .sheet-tab-input:focus {
   outline: 2px solid #2563eb;
 }
+
+.resize-handle {
+  position: absolute;
+  z-index: 2;
+  background: transparent;
+}
+
+.resize-handle-col {
+  top: 0;
+  right: 0;
+  width: 8px;
+  height: 100%;
+  cursor: col-resize;
+}
+
+.resize-handle-row {
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  height: 8px;
+  cursor: row-resize;
+}
+
+.sheet-cell:hover .resize-handle-col,
+.sheet-cell:hover .resize-handle-row {
+  background: rgba(37, 99, 235, 0.12);
+}

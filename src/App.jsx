@@ -3,9 +3,12 @@ import './App.css'
 
 const TOTAL_ROWS = 1000
 const TOTAL_COLS = 1000
-const ROW_HEIGHT = 32
-const COL_WIDTH = 100
-const BUFFER = 6
+const DEFAULT_ROW_HEIGHT = 32
+const DEFAULT_COL_WIDTH = 100
+const MIN_ROW_HEIGHT = 24
+const MIN_COL_WIDTH = 50
+const HEADER_ROW = 0
+const HEADER_COL = 0
 
 const columnLabel = (index) => {
   let label = ''
@@ -32,8 +35,81 @@ function App() {
   const [editingCell, setEditingCell] = useState(null)
   const [renamingSheet, setRenamingSheet] = useState(null)
   const [renameValue, setRenameValue] = useState('')
+  const [colWidths, setColWidths] = useState(() => Array(TOTAL_COLS + 1).fill(DEFAULT_COL_WIDTH))
+  const [rowHeights, setRowHeights] = useState(() => Array(TOTAL_ROWS + 1).fill(DEFAULT_ROW_HEIGHT))
+  const [resizing, setResizing] = useState(null)
 
   const getCellKey = (row, col) => `${row}-${col}`
+
+  const totalCols = TOTAL_COLS + 1
+  const totalRows = TOTAL_ROWS + 1
+
+  const colOffsets = useMemo(() => {
+    const offsets = [0]
+    for (let i = 0; i < totalCols; i += 1) {
+      offsets.push(offsets[offsets.length - 1] + colWidths[i])
+    }
+    return offsets
+  }, [colWidths, totalCols])
+
+  const rowOffsets = useMemo(() => {
+    const offsets = [0]
+    for (let i = 0; i < totalRows; i += 1) {
+      offsets.push(offsets[offsets.length - 1] + rowHeights[i])
+    }
+    return offsets
+  }, [rowHeights, totalRows])
+
+  const findIndexByOffset = (offsets, value) => {
+    let low = 0
+    let high = offsets.length - 1
+    while (low < high) {
+      const mid = Math.floor((low + high) / 2)
+      if (offsets[mid] <= value) {
+        low = mid + 1
+      } else {
+        high = mid
+      }
+    }
+    return Math.max(0, low - 1)
+  }
+
+  const startCol = findIndexByOffset(colOffsets, scroll.left)
+  const startRow = findIndexByOffset(rowOffsets, scroll.top)
+
+  const findEndIndex = (startIndex, offsets, visibleSize) => {
+    let endIndex = startIndex
+    while (
+      endIndex + 1 < offsets.length - 1 &&
+      offsets[endIndex + 1] - offsets[startIndex] < visibleSize + 200
+    ) {
+      endIndex += 1
+    }
+    return endIndex
+  }
+
+  const endCol = findEndIndex(startCol, colOffsets, viewport.width || 800)
+  const endRow = findEndIndex(startRow, rowOffsets, viewport.height || 500)
+
+  const rows = useMemo(() => {
+    const list = []
+    for (let row = startRow; row <= endRow; row += 1) {
+      list.push(row)
+    }
+    return list
+  }, [startRow, endRow])
+
+  const cols = useMemo(() => {
+    const list = []
+    for (let col = startCol; col <= endCol; col += 1) {
+      list.push(col)
+    }
+    return list
+  }, [startCol, endCol])
+
+  const handleResizeStart = (type, index, startClient, initialSize) => {
+    setResizing({ type, index, startClient, initialSize })
+  }
 
   const lettersToColumnIndex = (letters) => {
     let index = 0
@@ -195,40 +271,43 @@ function App() {
     return () => window.removeEventListener('resize', updateViewport)
   }, [])
 
+  useEffect(() => {
+    if (!resizing) return undefined
+
+    const handleMouseMove = (event) => {
+      if (resizing.type === 'col') {
+        const delta = event.clientX - resizing.startClient
+        setColWidths((prev) => {
+          const next = [...prev]
+          next[resizing.index] = Math.max(MIN_COL_WIDTH, resizing.initialSize + delta)
+          return next
+        })
+      } else {
+        const delta = event.clientY - resizing.startClient
+        setRowHeights((prev) => {
+          const next = [...prev]
+          next[resizing.index] = Math.max(MIN_ROW_HEIGHT, resizing.initialSize + delta)
+          return next
+        })
+      }
+    }
+
+    const handleMouseUp = () => {
+      setResizing(null)
+    }
+
+    document.addEventListener('mousemove', handleMouseMove)
+    document.addEventListener('mouseup', handleMouseUp)
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove)
+      document.removeEventListener('mouseup', handleMouseUp)
+    }
+  }, [resizing])
+
   const handleScroll = (event) => {
     const target = event.currentTarget
     setScroll({ top: target.scrollTop, left: target.scrollLeft })
   }
-
-  const visibleCols = Math.min(
-    TOTAL_COLS,
-    Math.ceil((viewport.width || 800) / COL_WIDTH) + BUFFER,
-  )
-  const visibleRows = Math.min(
-    TOTAL_ROWS,
-    Math.ceil((viewport.height || 500) / ROW_HEIGHT) + BUFFER,
-  )
-
-  const startCol = Math.max(0, Math.floor(scroll.left / COL_WIDTH))
-  const startRow = Math.max(0, Math.floor(scroll.top / ROW_HEIGHT))
-  const endCol = Math.min(TOTAL_COLS, startCol + visibleCols)
-  const endRow = Math.min(TOTAL_ROWS, startRow + visibleRows)
-
-  const rows = useMemo(() => {
-    const list = []
-    for (let row = startRow; row < endRow; row += 1) {
-      list.push(row)
-    }
-    return list
-  }, [startRow, endRow])
-
-  const cols = useMemo(() => {
-    const list = []
-    for (let col = startCol; col < endCol; col += 1) {
-      list.push(col)
-    }
-    return list
-  }, [startCol, endCol])
 
   const currentSheetValues = sheetValues.get(activeSheet) ?? new Map()
 
@@ -326,8 +405,8 @@ function App() {
     setEditingCell(null)
   }
 
-  const contentWidth = TOTAL_COLS * COL_WIDTH
-  const contentHeight = TOTAL_ROWS * ROW_HEIGHT
+  const contentWidth = colOffsets[totalCols]
+  const contentHeight = rowOffsets[totalRows]
 
   return (
     <div className="App">
@@ -411,7 +490,7 @@ function App() {
           >
             <div
               className="sheet-visible"
-              style={{ transform: `translate(${startCol * COL_WIDTH}px, ${startRow * ROW_HEIGHT}px)` }}
+              style={{ transform: `translate(${colOffsets[startCol]}px, ${rowOffsets[startRow]}px)` }}
             >
               {rows.map((row) => (
                 <div className="sheet-row" key={row}>
@@ -435,7 +514,31 @@ function App() {
                         onDoubleClick={() => {
                           if (!isHeader) setEditingCell(key)
                         }}
+                        style={{
+                          width: colWidths[col],
+                          minWidth: colWidths[col],
+                          height: rowHeights[row],
+                          minHeight: rowHeights[row],
+                        }}
                       >
+                        {row === HEADER_ROW && col > HEADER_COL && (
+                          <div
+                            className="resize-handle resize-handle-col"
+                            onMouseDown={(event) => {
+                              event.stopPropagation()
+                              handleResizeStart('col', col, event.clientX, colWidths[col])
+                            }}
+                          />
+                        )}
+                        {col === HEADER_COL && row > HEADER_ROW && (
+                          <div
+                            className="resize-handle resize-handle-row"
+                            onMouseDown={(event) => {
+                              event.stopPropagation()
+                              handleResizeStart('row', row, event.clientY, rowHeights[row])
+                            }}
+                          />
+                        )}
                         {isEditing ? (
                           <input
                             className="sheet-input"
