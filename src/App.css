@@ -1,0 +1,195 @@
+.App {
+  padding: 24px;
+  min-height: 100vh;
+  background: #f8fafc;
+  color: #111827;
+  font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+.app-header {
+  margin-bottom: 16px;
+}
+
+.app-header h1 {
+  margin: 0 0 4px;
+  font-size: clamp(1.75rem, 2.5vw, 2.5rem);
+}
+
+.app-header p {
+  margin: 0;
+  color: #4b5563;
+}
+
+.sheet-frame {
+  border-radius: 16px;
+  overflow: hidden;
+  background: white;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 24px 50px rgba(15, 23, 42, 0.08);
+}
+
+.sheet-scroll-wrapper {
+  width: 100%;
+  height: calc(100vh - 160px);
+  min-height: 420px;
+  overflow: auto;
+  position: relative;
+  background: #ffffff;
+}
+
+.sheet-phantom {
+  position: relative;
+}
+
+.sheet-visible {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.sheet-row {
+  display: flex;
+}
+
+.sheet-cell {
+  width: 100px;
+  min-width: 100px;
+  height: 32px;
+  min-height: 32px;
+  border: 1px solid #e5e7eb;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #fff;
+  color: #111827;
+  font-size: 12px;
+  line-height: 1;
+}
+
+.sheet-cell:first-child {
+  font-weight: 600;
+}
+
+.sheet-row:nth-child(even) .sheet-cell {
+  background: #f8fafc;
+}
+
+.sheet-cell {
+  position: relative;
+}
+
+.sheet-cell-content {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sheet-cell-header {
+  font-weight: 700;
+  background: #f9fafb;
+}
+
+.sheet-cell-data:hover {
+  cursor: text;
+  background: #f3f4f6;
+}
+
+.sheet-input {
+  width: 100%;
+  height: 100%;
+  padding: 0 8px;
+  border: none;
+  outline: none;
+  font: inherit;
+  color: #111827;
+  background: #ffffff;
+}
+
+.sheet-input:focus {
+  outline: 2px solid #2563eb;
+}
+
+.sheet-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+
+.sheet-tab,
+.sheet-tab-add {
+  padding: 8px 14px;
+  border: 1px solid #e5e7eb;
+  background: #ffffff;
+  color: #111827;
+  border-radius: 999px;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: background 150ms ease, border-color 150ms ease, color 150ms ease;
+}
+
+.sheet-tab:hover,
+.sheet-tab-add:hover {
+  background: #f3f4f6;
+}
+
+.sheet-tab.active {
+  background: #2563eb;
+  color: #ffffff;
+  border-color: #2563eb;
+}
+
+.sheet-tab-add {
+  font-weight: 700;
+}
+
+.sheet-tab-wrapper {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.sheet-tab-actions {
+  display: inline-flex;
+  gap: 4px;
+}
+
+.sheet-tab-icon {
+  width: 26px;
+  height: 26px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  background: transparent;
+  color: #6b7280;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  transition: background 150ms ease, color 150ms ease;
+}
+
+.sheet-tab-icon:hover {
+  background: #f3f4f6;
+}
+
+.sheet-tab-delete {
+  color: #ef4444;
+}
+
+.sheet-tab-input {
+  min-width: 110px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid #d1d5db;
+  font-size: 0.95rem;
+  background: white;
+  color: #111827;
+}
+
+.sheet-tab-input:focus {
+  outline: 2px solid #2563eb;
+}
