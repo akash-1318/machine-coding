@@ -54,13 +54,11 @@ function App() {
     return tokens
   }
 
-  const evaluationCache = new Map()
-
-  const evaluateCell = (row, col, visited = new Set()) => {
+  const evaluateCell = (row, col, visited = new Set(), cache = new Map()) => {
     const key = getCellKey(row, col)
-    if (evaluationCache.has(key)) return evaluationCache.get(key)
+    if (cache.has(key)) return cache.get(key)
     if (visited.has(key)) {
-      evaluationCache.set(key, '#CYCLE')
+      cache.set(key, '#CYCLE')
       return '#CYCLE'
     }
 
@@ -68,14 +66,20 @@ function App() {
     const rawValue = currentSheetValues.get(key) || ''
     let result = rawValue
     if (typeof rawValue === 'string' && rawValue.startsWith('=')) {
-      result = evaluateFormula(rawValue.slice(1), visited)
+      console.debug('[Formula] evaluateCell', key, rawValue)
+      result = evaluateFormula(rawValue.slice(1), visited, cache)
+    } else if (typeof rawValue === 'string' && rawValue !== '') {
+      const numeric = Number(rawValue)
+      if (!Number.isNaN(numeric)) {
+        result = numeric
+      }
     }
     visited.delete(key)
-    evaluationCache.set(key, result)
+    cache.set(key, result)
     return result
   }
 
-  const evaluateFormula = (formula, visited) => {
+  const evaluateFormula = (formula, visited, cache = new Map()) => {
     const tokens = tokenizeFormula(formula)
     let index = 0
 
@@ -105,8 +109,8 @@ function App() {
       if (refMatch) {
         const refCol = lettersToColumnIndex(refMatch[1])
         const refRow = Number(refMatch[2])
-        if (refRow <= 0 || refCol <= 0) return '#ERR'
-        const value = evaluateCell(refRow, refCol, visited)
+        if (refRow < 1 || refCol <= 0) return '#ERR'
+        const value = evaluateCell(refRow, refCol, visited, cache)
         if (typeof value === 'string') return value
         return value
       }
@@ -171,7 +175,7 @@ function App() {
     const key = getCellKey(row, col)
     const raw = currentSheetValues.get(key) || ''
     if (typeof raw === 'string' && raw.startsWith('=')) {
-      const value = evaluateCell(row, col)
+      const value = evaluateCell(row, col, new Set(), new Map())
       if (value === '#CYCLE' || value === '#ERR') return value
       return value.toString()
     }
@@ -417,8 +421,10 @@ function App() {
                     const isEditing = editingCell === key
                     const rawValue = isHeader
                       ? row === 0
-                        ? columnLabel(col + 1)
-                        : String(row + 1)
+                        ? col === 0
+                          ? ''
+                          : columnLabel(col)
+                        : String(row)
                       : currentSheetValues.get(key) || ''
                     const displayValue = isHeader ? rawValue : formatDisplayValue(row, col)
 
