@@ -146,6 +146,23 @@
   font-weight: 700;
 }
 
+.sheet-tabs-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 12px;
+}
+
+.sticky-control select {
+  margin-left: 8px;
+  border: 1px solid #d1d5db;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: #ffffff;
+  color: #111827;
+}
+
 .sheet-tab-wrapper {
   display: inline-flex;
   align-items: center;
@@ -219,4 +236,43 @@
 .sheet-cell:hover .resize-handle-col,
 .sheet-cell:hover .resize-handle-row {
   background: rgba(37, 99, 235, 0.12);
+}
+.sheet-tabs-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 12px;
+}
+
+.sticky-control label {
+  font-size: 0.95rem;
+  color: #374151;
+}
+
+.sticky-control select {
+  margin-left: 8px;
+  border: 1px solid #d1d5db;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: #ffffff;
+  color: #111827;
+}
+
+.sheet-sticky-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: inline-block;
+  pointer-events: none;
+}
+
+.sheet-sticky-row {
+  display: flex;
+}
+
+.sheet-cell-sticky {
+  position: relative;
+  background: #f9fafb;
+  pointer-events: auto;
 }
